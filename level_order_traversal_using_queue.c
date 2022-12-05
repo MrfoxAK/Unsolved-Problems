@@ -1,235 +1,95 @@
+// Iterative Queue based C program
+// to do level order traversal
+// of Binary Tree
 #include <stdio.h>
 #include <stdlib.h>
+#define MAX_Q_SIZE 500
 
-struct node
-{
-     int data;
-     struct node *left;
-     struct node *right;
-     int height;
+/* A binary tree node has data,
+pointer to left child
+and a pointer to right child */
+struct node {
+	int data;
+	struct node* left;
+	struct node* right;
 };
 
-struct node *createNode(int data)
+/* frunction prototypes */
+struct node** createQueue(int*, int*);
+void enQueue(struct node**, int*, struct node*);
+struct node* deQueue(struct node**, int*);
+
+/* Given a binary tree, print its nodes in level order
+using array for implementing queue */
+void printLevelOrder(struct node* root)
 {
-     struct node *newNode = (struct node *)malloc(sizeof(struct node));
-     newNode->data = data;
-     newNode->left = NULL;
-     newNode->right = NULL;
-     newNode->height = 1;
-     return newNode;
+	int rear, front;
+	struct node** queue = createQueue(&front, &rear);
+	struct node* temp_node = root;
+
+	while (temp_node) {
+		printf("%d ", temp_node->data);
+
+		/*Enqueue left child */
+		if (temp_node->left)
+			enQueue(queue, &rear, temp_node->left);
+
+		/*Enqueue right child */
+		if (temp_node->right)
+			enQueue(queue, &rear, temp_node->right);
+
+		/*Dequeue node and make it temp_node*/
+		temp_node = deQueue(queue, &front);
+	}
 }
 
-int getHeight(struct node *n)
+/*UTILITY FUNCTIONS*/
+struct node** createQueue(int* front, int* rear)
 {
-     if (n == NULL)
-     {
-          return 0;
-     }
-     return n->height;
+	struct node** queue = (struct node**)malloc(
+		sizeof(struct node*) * MAX_Q_SIZE);
+
+	*front = *rear = 0;
+	return queue;
 }
 
-int max(int a, int b)
+void enQueue(struct node** queue, int* rear,
+			struct node* new_node)
 {
-     return (a > b) ? a : b;
+	queue[*rear] = new_node;
+	(*rear)++;
 }
 
-int getBF(struct node *N)
+struct node* deQueue(struct node** queue, int* front)
 {
-     if (N == NULL)
-          return 0;
-     return getHeight(N->left) - getHeight(N->right);
+	(*front)++;
+	return queue[*front - 1];
 }
 
-struct node *leftRotate(struct node *y)
+/* Helper function that allocates a new node with the
+given data and NULL left and right pointers. */
+struct node* newNode(int data)
 {
-     struct node *x = y->right;
-     struct node *t2 = x->left;
-     x->left = y;
-     y->right = t2;
-     x->height = max(getHeight(x->left), getHeight(x->right)) + 1;
-     y->height = max(getHeight(y->left), getHeight(y->right)) + 1;
-     return x;
+	struct node* node
+		= (struct node*)malloc(sizeof(struct node));
+	node->data = data;
+	node->left = NULL;
+	node->right = NULL;
+
+	return (node);
 }
 
-struct node *rightRotate(struct node *x)
-{
-     struct node *y = x->left;
-     struct node *t2 = y->right;
-     y->right = x;
-     x->left = t2;
-     y->height = max(getHeight(y->left), getHeight(y->right)) + 1;
-     x->height = max(getHeight(x->left), getHeight(x->right)) + 1;
-     return y;
-}
-
-struct node *insert(struct node *root, int data)
-{
-     if (root == NULL)
-     {
-          root = createNode(data);
-     }
-     else if (data > root->data)
-     {
-          root->right = insert(root->right, data);
-     }
-     else
-     {
-          root->left = insert(root->left, data);
-     }
-     root->height = 1 + max(getHeight(root->left), getHeight(root->right));
-     int bf = getBF(root);
-     if (bf > 1 && data < root->left->data)
-     {
-          return rightRotate(root);
-     }
-     else if (bf < -1 && data > root->right->data)
-     {
-          return leftRotate(root);
-     }
-     else if (bf > 1 && data > root->left->data)
-     {
-          root->left = leftRotate(root->left);
-          return rightRotate(root);
-     }
-     else if (bf < -1 && data < root->right->data)
-     {
-          root->right = rightRotate(root->right);
-          return leftRotate(root);
-     }
-     return root;
-}
-
-void inOrder(struct node *root)
-{
-     if (root != NULL)
-     {
-          inOrder(root->left);
-          printf("%d ", root->data);
-          inOrder(root->right);
-     }
-}
-
-// using loop (O)n^2
-void levelOrder_traversel(struct node *root, int level)
-{
-     if (root == NULL)
-     {
-          return;
-     }
-     else if (level == 1)
-     {
-          printf("%d ", root->data);
-     }
-     else if (level > 1)
-     {
-          levelOrder_traversel(root->left, level - 1);
-          levelOrder_traversel(root->right, level - 1);
-     }
-}
-
-
-// struct Node
-// {
-//      int data;
-//      struct Node *next;
-// };
-
-struct node *f = NULL;
-struct node *r = NULL;
-
-void linklisttreversal(struct node *ptr)
-{
-     while (ptr != NULL)
-     {
-          printf("%d->", ptr->data);
-          ptr = ptr->right;
-     }
-}
-
-int isEmpty(struct node* n){
-     if (r = NULL)
-     {
-          return 1;
-     }
-     else
-     {
-          return 0;
-     }
-}
-
-void enqueue(struct node* q)
-{
-     // struct node * new = (struct node *)malloc(sizeof(struct node));
-     if (f == NULL && r == NULL)
-     {
-          f = r = q;
-     }
-     else
-     {
-          r->right = q;
-          r=q;
-     }
-}
-
-struct node* dequeue()
-{
-     struct node* temp = f;
-     if (f == NULL)
-     {
-          printf("Queue is Empty\n");
-     }
-     else if (f == r)
-     {
-          f = r = NULL;
-     }
-     else
-     {
-          f=f->right;    
-     }
-     struct node* t = f;
-     free(t);
-     return temp;
-}
-
-void LevelOrder(struct node* root){
-     // struct node* temproot = root;
-     enqueue(root);
-     while (!isEmpty(root))
-     {
-          struct node* pop = dequeue();
-          printf("%d ",pop->data);
-          if (root->left != NULL)
-          {
-               enqueue(root->left);
-          }
-          if (root->right != NULL)
-          {
-               enqueue(root->right);
-          }
-     }
-}
-
+/* Driver program to test above functions*/
 int main()
 {
-     struct node *root = NULL;
-     /* Constructing tree given in the above figure */
-     root = insert(root, 10);
-     root = insert(root, 20);
-     root = insert(root, 30);
-     root = insert(root, 40);
-     root = insert(root, 50);
-     root = insert(root, 25);
-     /* The constructed AVL Tree would be
-             30
-            / \
-           20 40
-           / \	 \
-          10 25 50
-     */
-     printf("Inorder traversal of the constructed AVL"
-            " tree is \n");
-     inOrder(root);
-     printf("\n");
-     LevelOrder(root);
-     return 0;
+	struct node* root = newNode(1);
+	root->left = newNode(2);
+	root->right = newNode(3);
+	root->left->left = newNode(4);
+	root->left->right = newNode(5);
+
+	printf("Level Order traversal of binary tree is \n");
+	printLevelOrder(root);
+
+	return 0;
 }
